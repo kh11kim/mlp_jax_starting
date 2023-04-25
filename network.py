@@ -2,7 +2,8 @@ from jax import lax
 import jax.numpy as jnp
 import flax.linen as nn
 from typing import Callable, Sequence
-
+import orbax
+from flax.training import orbax_utils
 
 class LipLinear(nn.Module):
     features: int
@@ -28,32 +29,25 @@ class LipLinear(nn.Module):
         return y
 
 class MLP(nn.Module):
-    nin: int
-    features: Sequence[int]
-    skip_layer: int    
+    dims: Sequence[int]
+    skip_layer: int = 0 #if 0, no skip connection
     linear: nn.Module = nn.Dense
     actv_fn: Callable = nn.relu
     out_actv_fn: Callable = None
 
     def setup(self):
+        self.nin = self.dims[0]
         layers = []
-        for i, dim in enumerate(self.features):
-            if i == self.skip_layer:
+        for i, dim in enumerate(self.dims[1:]):
+            if i == self.skip_layer and i != 0:
                 dim += self.nin
             layers += [self.linear(dim)]
         self.layers = layers
-
-    @staticmethod
-    def lipschitz_loss(params):
-        loss = 1.
-        for layer in params['params'].keys():
-            loss *= nn.softplus(params['params'][layer]['c'])
-        return loss[0]
     
     def __call__(self, inputs):
         x = inputs
         for i, layer in enumerate(self.layers):
-            if i != 0 and i == self.skip_layer:
+            if i == self.skip_layer and i != 0:
                 x = jnp.hstack([x, inputs])
             x = layer(x)
             if i != len(self.layers) - 1:
@@ -63,4 +57,11 @@ class MLP(nn.Module):
             x = self.out_actv_fn(x)
         return x
 
+def save(path, params):
+    orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+    save_args = orbax_utils.save_args_from_target(params)
+    orbax_checkpointer.save(path, params, save_args=save_args)
 
+def load(path):
+    orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
+    return orbax_checkpointer.restore(path)
