@@ -49,7 +49,9 @@ def trainer(
     loss_fn:Callable,
     num_epochs:int,
     exp_str:str,
-    log_dir="./log", ckpt_dir="./checkpoint", 
+    log_dir="./log", 
+    ckpt_dir="./checkpoint", 
+    save_interval_steps=10,
 ):
     """
     Train a model using the given parameters.
@@ -73,8 +75,9 @@ def trainer(
 
     # Set up logging and checkpointing
     log_dir = os.path.join(log_dir, exp_str)
+    ckpt_dir = os.path.join(ckpt_dir, exp_str)
     writer = SummaryWriter(log_dir=log_dir)
-    ckpt_options = orbax.checkpoint.CheckpointManagerOptions(max_to_keep=10, create=True)
+    ckpt_options = orbax.checkpoint.CheckpointManagerOptions(save_interval_steps=save_interval_steps, max_to_keep=10, create=True)
     orbax_checkpointer = orbax.checkpoint.PyTreeCheckpointer()
     checkpoint_manager = orbax.checkpoint.CheckpointManager(ckpt_dir, orbax_checkpointer, ckpt_options)
 
