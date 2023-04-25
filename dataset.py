@@ -2,12 +2,16 @@ import numpy as np
 import torch.utils.data as data
 
 class NumpyDataset(data.Dataset):
+    """
+    A class for creating a dataset from numpy arrays.
+    """
     def __init__(self, data:np.ndarray, label:np.ndarray):
         """
+        Initialize the dataset with the given data and labels.
+        
         Inputs:
-            size - Number of data points we want to generate
-            seed - The seed to use to create the PRNG state with which we want to generate the data points
-            std - Standard deviation of the noise (see generate_continuous_xor function)
+            data - A numpy array containing the data points.
+            label - A numpy array containing the labels for each data point.
         """
         super().__init__()
         self.size = data.shape[0]
@@ -15,12 +19,9 @@ class NumpyDataset(data.Dataset):
         self.label = label
 
     def __len__(self):
-        # Number of data point we have. Alternatively self.data.shape[0], or self.label.shape[0]
         return self.size
 
     def __getitem__(self, idx):
-        # Return the idx-th data point of the dataset
-        # If we have multiple things to return (data point and label), we can return them as tuple
         data_point = self.data[idx]
         data_label = self.label[idx]
         return data_point, data_label
@@ -28,6 +29,14 @@ class NumpyDataset(data.Dataset):
 # This collate function is taken from the JAX tutorial with PyTorch Data Loading
 # https://jax.readthedocs.io/en/latest/notebooks/Neural_Network_and_Data_Loading.html
 def numpy_collate(batch):
+    """Collates a batch of samples into a single numpy array.
+    
+    Args:
+        batch (list): A list of samples to be collated.
+        
+    Returns:
+        A single numpy array containing the collated samples.
+    """
     if isinstance(batch[0], np.ndarray):
         return np.stack(batch)
     elif isinstance(batch[0], (tuple,list)):

@@ -6,6 +6,7 @@ import orbax
 from flax.training import orbax_utils
 
 class LipLinear(nn.Module):
+    """A linear layer with Lipschitz regularization."""
     features: int
     use_bias: bool = True
     kernel_init: Callable = nn.initializers.lecun_normal()
@@ -13,6 +14,14 @@ class LipLinear(nn.Module):
 
     @nn.compact
     def __call__(self, inputs):
+        """Forward pass of the LipLinear layer.
+        
+        Args:
+            inputs (jnp.ndarray): The input tensor.
+        
+        Returns:
+            jnp.ndarray: The output tensor.
+        """
         kernel = self.param('kernel',
             self.kernel_init,
             (jnp.shape(inputs)[-1], self.features))

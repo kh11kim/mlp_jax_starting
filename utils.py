@@ -1,8 +1,16 @@
-
 class Hyperparam:
-    def __init__(self):
-        pass
-
+    """Class to store hyperparameters for a model.
+    
+    Usage:
+        hp = Hyperparam()
+        hp.key1 = value1
+        hp.key2 = value2
+        ...
+        if key in hp:
+            # do something
+        print(hp)
+        print(hp.to_str())
+    """
     def __contains__(self, key):
         return key in self.__dict__.keys()
     
