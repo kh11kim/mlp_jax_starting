@@ -4,7 +4,7 @@ This repository contains code for a basic learning pipeline using Jax, a numeric
 
 ## Usage
 
-To use the code in this repository, follow these steps:
+A sample usage is as follows:
 
 1. Set hyperparameters:
 ```
