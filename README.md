@@ -4,19 +4,20 @@ This repository contains code for a basic learning pipeline using Jax, a numeric
 
 ## Usage
 
-A sample usage is as follows:
+To use the code in this repository, follow these steps:
 
 1. Set hyperparameters:
-```
+```python
 hp = Hyperparam()
-hp.layers = [2, 10, 10, 1]
+hp.dims = [2, 10, 10, 1]
 hp.lr = 0.001
 hp.batch_size = 128
+ 
 ```
 
 2. Load data:
-```
-df = pd.read_csv("circle.csv")
+```python
+df = pd.read_csv("training_data/circle.csv")
 dataset = NumpyDataset(df[["x", "y"]].to_numpy(), df["d"].to_numpy())
 train_dataset, val_dataset = train_test_split(dataset, train_size=0.9, shuffle=True)
 
@@ -27,27 +28,28 @@ val_loader = data.DataLoader(
 ```
 
 3. Create model and initialize parameters:
-```
-model = MLP(hp.layers)
+```python
+model = get_mlp(hp)
 key1, key2 = random.split(random.PRNGKey(0))
 x = random.normal(key1, (2,))
 params = model.init(key2, x)
 ```
 
 4. Train model and save checkpoints:
-```
+```python
 tx = optax.adam(learning_rate=hp.lr)
 state = TrainState.create(apply_fn=model.apply, params=params, tx=tx)
 trained_state = trainer(
     state, train_loader, val_loader, l2_loss_fn,
-    num_epochs=1000, exp_str=hp.to_str())
+    num_epochs=100, exp_str=hp.as_str())
+    
+save("model", trained_state, hp, force=True)
 ```
 
-5. Use trained model:
-```
-params = load("checkpoint/layers:2_10_10_1,lr:0.001,batch_size:128/990/default")
-bind_model = model.bind(params)
-bind_model(x)
+5. Load last checkpoint and use model:
+```python
+sdf_fn = get_mlp_by_path("./model")
+sdf_fn(jnp.zeros(2))
 ```
 
 ## License
